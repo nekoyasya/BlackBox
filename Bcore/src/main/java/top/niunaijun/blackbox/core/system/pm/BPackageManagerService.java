@@ -20,6 +20,8 @@ import android.text.TextUtils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -664,6 +666,20 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
         }
     }
 
+    public static void finalFieldModify(Object object, String fieldName, Object newFieldValue) throws Exception {
+        /*Field field = object.getClass().getDeclaredField(fieldName);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        if(!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        field.set(object, newFieldValue);*/
+        Field field = object.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(object, newFieldValue);
+    }
+
     private InstallResult installPackageAsUserLocked(String file, InstallOption option, int userId) {
         long l = System.currentTimeMillis();
         InstallResult result = new InstallResult();
@@ -705,7 +721,14 @@ public class BPackageManagerService extends IBPackageManagerService.Stub impleme
             result.packageName = aPackage.packageName;
 
             if (option.isFlag(InstallOption.FLAG_SYSTEM)) {
-                aPackage.applicationInfo = BlackBoxCore.getPackageManager().getPackageInfo(aPackage.packageName, 0).applicationInfo;
+                ApplicationInfo appInfo = BlackBoxCore.getPackageManager().getPackageInfo(aPackage.packageName, 0).applicationInfo;
+                //aPackage.applicationInfo = BlackBoxCore.getPackageManager().getPackageInfo(aPackage.packageName, 0).applicationInfo;
+                try {
+                    aPackage.applicationInfo = appInfo;
+                } catch (Throwable t) {
+                    finalFieldModify(aPackage, "applicationInfo", appInfo);
+                }
+
             }
             BPackageSettings bPackageSettings = mSettings.getPackageLPw(aPackage.packageName, aPackage, option);
 
