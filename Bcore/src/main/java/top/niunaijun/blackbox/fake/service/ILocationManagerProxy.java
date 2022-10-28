@@ -59,6 +59,15 @@ public class ILocationManagerProxy extends BinderInvocationStub {
         return super.invoke(proxy, method, args);
     }
 
+    @ProxyMethod("asBinder")
+    public static class AsBinder extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            return BRServiceManager.get().getService(Context.LOCATION_SERVICE);
+        }
+    }
+
     @ProxyMethod("registerGnssStatusCallback")
     public static class RegisterGnssStatusCallback extends MethodHook {
 
@@ -109,8 +118,54 @@ public class ILocationManagerProxy extends BinderInvocationStub {
         }
     }
 
+    @ProxyMethod("registerLocationListener")
+    public static class RegisterLocationListener extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (BLocationManager.isFakeLocationEnable()) {
+                if (args[2] instanceof IInterface) {
+                    IInterface listener = (IInterface) args[2];
+                    BLocationManager.get().requestLocationUpdates(listener.asBinder());
+                    return 0;
+                }
+            }
+            return method.invoke(who, args);
+        }
+    }
+
+    @ProxyMethod("registerGnssNmeaCallback")
+    public static class RegisterGnssNmeaCallback extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (BLocationManager.isFakeLocationEnable()) {
+                if (args[0] instanceof IInterface) {
+                    IInterface listener = (IInterface) args[0];
+                    // todo
+                    return 0;
+                }
+            }
+            return method.invoke(who, args);
+        }
+    }
+
     @ProxyMethod("removeUpdates")
     public static class RemoveUpdates extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            if (args[0] instanceof IInterface) {
+                IInterface listener = (IInterface) args[0];
+                BLocationManager.get().removeUpdates(listener.asBinder());
+                return 0;
+            }
+            return method.invoke(who, args);
+        }
+    }
+
+    @ProxyMethod("unregisterLocationListener")
+    public static class UnregisterLocationListener extends MethodHook {
 
         @Override
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
@@ -177,6 +232,15 @@ public class ILocationManagerProxy extends BinderInvocationStub {
         protected Object hook(Object who, Method method, Object[] args) throws Throwable {
             String provider = (String) args[0];
             return Objects.equals(provider, LocationManager.GPS_PROVIDER);
+        }
+    }
+
+    @ProxyMethod("isLocationEnabledForUser")
+    public static class isLocationEnabledForUser extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            return BLocationManager.isFakeLocationEnable() ? true : method.invoke(who, args);
         }
     }
 

@@ -1,14 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.2"
+    compileSdkVersion 32
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
 
         consumerProguardFiles "consumer-rules.pro"
         ndk {
@@ -37,22 +34,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    aaptOptions {
-        cruncherEnabled = false
-        useNewCruncher = false
-    }
     testOptions {
         unitTests.returnDefaultValues = true
     }
-    lintOptions {
-        checkReleaseBuilds false
+    lint {
         abortOnError false
-        warningsAsErrors false
-        disable "UnusedResources", 'RestrictedApi'
-        textOutput "stdout"
+        checkOnly 'NewApi', 'InlinedApi'
+        checkReleaseBuilds false
+        disable 'UnusedResources', 'RestrictedApi'
+        textOutput file('stdout')
         textReport false
-        check 'NewApi', 'InlinedApi'
+        warningsAsErrors false
     }
+    namespace 'top.niunaijun.blackbox'
 }
 
 

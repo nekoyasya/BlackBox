@@ -5,7 +5,6 @@ plugins {
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
 
     defaultConfig {
         applicationId "top.niunaijun.blackboxa"
@@ -89,22 +88,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    aaptOptions {
-        cruncherEnabled = false
-        useNewCruncher = false
-    }
     testOptions {
         unitTests.returnDefaultValues = true
     }
-    lintOptions {
-        checkReleaseBuilds false
+    lint {
         abortOnError false
-        warningsAsErrors false
-        disable "UnusedResources", 'RestrictedApi'
-        textOutput "stdout"
+        checkOnly 'NewApi', 'InlinedApi'
+        checkReleaseBuilds false
+        disable 'UnusedResources', 'RestrictedApi'
+        textOutput file('stdout')
         textReport false
-        check 'NewApi', 'InlinedApi'
+        warningsAsErrors false
     }
+    namespace 'top.niunaijun.blackboxa'
 }
 
 
